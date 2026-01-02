@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legacy - Interactive Family Tree</title>
+    
+    <!-- External Dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --secondary: #f43f5e;
+            --bg-glass: rgba(255, 255, 255, 0.9);
+            --border-glass: rgba(255, 255, 255, 0.3);
+            --shadow-custom: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- Navbar --- */
+        .navbar {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            color: var(--primary) !important;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        /* --- Tree Core Styling --- */
+        #tree-container {
+            padding: 60px 20px;
+            overflow-x: auto;
+            text-align: center;
+            min-height: 85vh;
+        }
+
+        .tree {
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .tree ul {
+            padding-top: 30px; 
+            position: relative;
+            transition: all 0.5s;
+            display: flex;
+            justify-content: center;
+        }
+
+        .tree li {
+            text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 30px 10px 0 10px;
+            transition: all 0.5s;
+        }
+
+        /* Connecting Lines Logic */
+        .tree li::before, .tree li::after {
+            content: '';
+            position: absolute; 
+            top: 0; 
+            right: 50%;
+            border-top: 2px solid #cbd5e1;
+            width: 50%; 
+            height: 30px;
+        }
+        .tree li::after {
+            right: auto; 
+            left: 50%;
+            border-left: 2px solid #cbd5e1;
+        }
+
+        .tree li:only-child::after, .tree li:only-child::before { display: none; }
+        .tree li:only-child { padding-top: 0; }
+        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+        .tree li:last-child::before { border-right: 2px solid #cbd5e1; border-radius: 0 10px 0 0; }
+        .tree li:first-child::after { border-radius: 10px 0 0 0; }
+
+        .tree ul ul::before {
+            content: '';
+            position: absolute; 
+            top: 0; 
+            left: 50%;
+            border-left: 2px solid #cbd5e1;
+            width: 0; 
+            height: 30px;
+        }
+
+        /* Person Node Cards */
+        .person-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 20px;
+            display: inline-block;
+            position: relative;
+            box-shadow: var(--shadow-custom);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            width: 200px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .person-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 30px 60px rgba(99, 102, 241, 0.12);
+            border-color: var(--primary-light);
+        }
+
+        .gender-male { border-top: 5px solid var(--primary); }
+        .gender-female { border-top: 5px solid var(--secondary); }
+
+        .person-img {
+            width: 56px;
+            height: 56px;
+            background: #f8fafc;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            font-size: 1.2rem;
+            border: 1px solid #f1f5f9;
+        }
+
+        .person-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            color: #0f172a;
+            white-space: normal;
+        }
+
+        .person-role {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        /* --- Dynamic Hover Details (Popover) --- */
+        .details-popover {
+            position: absolute;
+            background: white;
+            width: 280px;
+            padding: 24px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            top: 50%;
+            left: 110%;
+            transform: translateY(-50%);
+            display: none;
+            z-index: 1000;
+            text-align: left;
+            border: 1px solid #f1f5f9;
+            pointer-events: none; /* Prevents flickering */
+        }
+
+        .person-card:hover .details-popover {
+            display: block;
+            animation: fadeInRight 0.3s ease-out;
+        }
+
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateY(-50%) translateX(-15px); }
+            to { opacity: 1; transform: translateY(-50%) translateX(0); }
+        }
+
+        /* --- Event Tracker Sidebar --- */
+        .event-sidebar {
+            position: fixed;
+            right: 25px;
+            bottom: 25px;
+            width: 340px;
+            max-height: 450px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            border-radius: 28px;
+            padding: 24px;
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 900;
+            display: none;
+        }
+
+        .event-item {
+            padding: 14px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            background: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.2s;
+        }
+
+        .event-item:hover { transform: scale(1.02); }
+
+        .event-item.today {
+            background: #eef2ff;
+            border: 1px solid var(--primary-light);
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.3); }
+            70% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+
+        /* Modal Polish */
+        .modal-content { border-radius: 30px; border: none; padding: 10px; }
+        .form-control, .form-select { border-radius: 14px; padding: 12px; border: 1px solid #e2e8f0; }
+        .btn-primary { background: var(--primary); border: none; border-radius: 14px; padding: 12px 24px; font-weight: 700; transition: all 0.3s; }
+        .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .event-sidebar { width: calc(100% - 40px); right: 20px; }
+            .details-popover { left: 50%; top: 110%; transform: translateX(-50%); width: 240px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav class="navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-network-wired"></i> LEGACY
+            </a>
+            <div class="d-flex gap-3">
+                <button class="btn btn-outline-dark rounded-pill" onclick="toggleSidebar()">
+                    <i class="fas fa-calendar-day me-2"></i>Events
+                </button>
+                <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#memberModal" onclick="resetForm()">
+                    <i class="fas fa-plus me-2"></i>Add Member
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Tree Layout Area -->
+    <div id="tree-container">
+        <div class="tree" id="tree-root">
+            <!-- JavaScript will inject the nodes here -->
+        </div>
+    </div>
+
+    <!-- Right-side Event Panel -->
+    <div class="event-sidebar" id="event-sidebar">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h5 class="fw-bold m-0 text-indigo-900">Upcoming Events</h5>
+            <button class="btn-close" onclick="toggleSidebar()" style="font-size: 0.8rem;"></button>
+        </div>
+        <div id="event-list">
+            <!-- Events injected here -->
+        </div>
+    </div>
+
+    <!-- Member Management Modal -->
+    <div class="modal fade" id="memberModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header border-0">
+                    <h5 class="fw-bold" id="modalTitle">Family Member Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="memberForm">
+                        <input type="hidden" id="editId">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted">FULL NAME</label>
+                                <input type="text" id="mName" class="form-control" required placeholder="e.g. Robert Wilson">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-muted">ROLE</label>
+                                <input type="text" id="mRole" class="form-control" required placeholder="e.g. Son">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-muted">GENDER</label>
+                                <select id="mGender" class="form-select">
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted">PARENT (Branch from)</label>
+                                <select id="mParent" class="form-select">
+                                    <option value="null">Set as Root (Top)</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-muted">BIRTH DATE</label>
+                                <input type="date" id="mBirth" class="form-control">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-muted">ANNIVERSARY</label>
+                                <input type="date" id="mAnniv" class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted">BIOGRAPHY</label>
+                                <textarea id="mBio" class="form-control" rows="3" placeholder="A short story about them..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-primary w-100" onclick="handleSave()">Save to Legacy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logic -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Internal State
+        let family = [
+            { id: 1, name: "Arthur Wilson", role: "Grandfather", gender: "male", parentId: null, birth: "1945-05-12", anniv: "1968-06-20", bio: "The founding patriarch. A retired architect with a passion for classical music." },
+            { id: 2, name: "Rose Wilson", role: "Grandmother", gender: "female", parentId: null, birth: "1948-03-10", anniv: "1968-06-20", bio: "Renowned gardener and the heart of the Wilson family celebrations." },
+            { id: 3, name: "David Wilson", role: "Father", gender: "male", parentId: 1, birth: "1972-11-22", anniv: "1998-10-05", bio: "Lead engineer and weekend mountain climber." },
+            { id: 4, name: "Alice Smith", role: "Mother", gender: "female", parentId: 1, birth: "1975-08-30", anniv: "1998-10-05", bio: "Creative writer and historical researcher." },
+            { id: 5, name: "Leo Wilson", role: "Son", gender: "male", parentId: 3, birth: "2002-01-01", anniv: null, bio: "Aspiring AI researcher and travel enthusiast." }
+        ];
+
+        // --- Render Engine ---
+        function render() {
+            const rootContainer = document.getElementById('tree-root');
+            rootContainer.innerHTML = "";
+            
+            const mainRoots = family.filter(m => m.parentId === null);
+            const wrapper = document.createElement('ul');
+            
+            mainRoots.forEach(root => {
+                wrapper.appendChild(createNode(root));
+            });
+            
+            rootContainer.appendChild(wrapper);
+            updateDropdown();
+            refreshEvents();
+        }
+
+        function createNode(member) {
+            const li = document.createElement('li');
+            const card = document.createElement('div');
+            card.className = `person-card gender-${member.gender}`;
+            
+            // Check for events today
+            const isBday = checkToday(member.birth);
+            const isAnniv = checkToday(member.anniv);
+
+            card.innerHTML = `
+                <div class="person-img">
+                    <i class="fas fa-${member.gender === 'male' ? 'male' : 'female'}"></i>
+                </div>
+                <div class="person-name">${member.name}</div>
+                <div class="person-role">${member.role}</div>
+                <div class="mt-2 h-10">
+                    ${isBday ? '<span class="badge bg-warning text-dark me-1"><i class="fas fa-birthday-cake"></i></span>' : ''}
+                    ${isAnniv ? '<span class="badge bg-danger me-1"><i class="fas fa-heart"></i></span>' : ''}
+                </div>
+
+                <!-- Hover Details -->
+                <div class="details-popover">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-indigo-100 text-indigo-700 px-3 py-2 rounded-pill font-bold">Profile</span>
+                        <i class="fas fa-edit text-muted cursor-pointer" onclick="editMode(${member.id})"></i>
+                    </div>
+                    <h6 class="fw-bold mb-1">${member.name}</h6>
+                    <p class="text-muted small mb-3">${member.role}</p>
+                    
+                    <div class="small d-flex align-items-center gap-2 mb-2">
+                        <div class="bg-blue-50 p-2 rounded-circle text-blue-600"><i class="fas fa-baby"></i></div>
+                        <div><strong>Birth:</strong> ${member.birth || 'Unknown'}</div>
+                    </div>
+                    ${member.anniv ? `
+                    <div class="small d-flex align-items-center gap-2 mb-3">
+                        <div class="bg-rose-50 p-2 rounded-circle text-rose-600"><i class="fas fa-rings-wedding"></i></div>
+                        <div><strong>Anniversary:</strong> ${member.anniv}</div>
+                    </div>` : ''}
+                    
+                    <div class="mt-3 p-3 bg-slate-50 rounded-4 italic small text-slate-600">
+                        "${member.bio || 'Sharing the legacy of our family.'}"
+                    </div>
+                </div>
+            `;
+
+            li.appendChild(card);
+
+            const children = family.filter(m => m.parentId === member.id);
+            if (children.length > 0) {
+                const subUl = document.createElement('ul');
+                children.forEach(child => subUl.appendChild(createNode(child)));
+                li.appendChild(subUl);
+            }
+
+            return li;
+        }
+
+        // --- Data Handling ---
+        function handleSave() {
+            const idInput = document.getElementById('editId').value;
+            const newObj = {
+                id: idInput ? parseInt(idInput) : Date.now(),
+                name: document.getElementById('mName').value,
+                role: document.getElementById('mRole').value,
+                gender: document.getElementById('mGender').value,
+                parentId: document.getElementById('mParent').value === "null" ? null : parseInt(document.getElementById('mParent').value),
+                birth: document.getElementById('mBirth').value,
+                anniv: document.getElementById('mAnniv').value,
+                bio: document.getElementById('mBio').value
+            };
+
+            if (idInput) {
+                const idx = family.findIndex(f => f.id === parseInt(idInput));
+                family[idx] = newObj;
+            } else {
+                family.push(newObj);
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById('memberModal')).hide();
+            render();
+        }
+
+        function editMode(id) {
+            const member = family.find(f => f.id === id);
+            if (!member) return;
+
+            document.getElementById('modalTitle').innerText = "Edit Member Info";
+            document.getElementById('editId').value = member.id;
+            document.getElementById('mName').value = member.name;
+            document.getElementById('mRole').value = member.role;
+            document.getElementById('mGender').value = member.gender;
+            document.getElementById('mParent').value = member.parentId === null ? "null" : member.parentId;
+            document.getElementById('mBirth').value = member.birth;
+            document.getElementById('mAnniv').value = member.anniv;
+            document.getElementById('mBio').value = member.bio;
+
+            new bootstrap.Modal(document.getElementById('memberModal')).show();
+        }
+
+        function resetForm() {
+            document.getElementById('modalTitle').innerText = "Add New Member";
+            document.getElementById('editId').value = "";
+            document.getElementById('memberForm').reset();
+        }
+
+        // --- Helpers ---
+        function updateDropdown() {
+            const sel = document.getElementById('mParent');
+            const current = sel.value;
+            sel.innerHTML = '<option value="null">Set as Root (Top)</option>';
+            family.forEach(m => {
+                const op = document.createElement('option');
+                op.value = m.id;
+                op.textContent = m.name;
+                sel.appendChild(op);
+            });
+            sel.value = current || "null";
+        }
+
+        function refreshEvents() {
+            const target = document.getElementById('event-list');
+            target.innerHTML = "";
+            document.getElementById('event-list');
+            target.innerHTML = "";
+            const todayKey = new Date().toISOString().slice(5, 10);
+            
+            const list = [];
+            family.forEach(m => {
+                if (m.birth) list.push({ date: m.birth, type: 'Birthday', name: m.name, icon: 'cake-candles', color: 'warning' });
+                if (m.anniv) list.push({ date: m.anniv, type: 'Anniversary', name: m.name, icon: 'heart', color: 'danger' });
+            });
+
+            list.sort((a, b) => a.date.slice(5) > b.date.slice(5) ? 1 : -1);
+
+            list.forEach(e => {
+                const isNow = e.date.slice(5, 10) === todayKey;
+                const div = document.createElement('div');
+                div.className = `event-item ${isNow ? 'today' : ''}`;
+                div.innerHTML = `
+                    <div class="bg-${e.color}-100 p-2 rounded-circle text-${e.color}">
+                        <i class="fas fa-${e.icon}"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold small">${e.name}</div>
+                        <div class="text-muted" style="font-size: 0.65rem;">${e.type} • ${e.date}</div>
+                    </div>
+                `;
+                target.appendChild(div);
+            });
+        }
+
+        function checkToday(dateStr) {
+            if (!dateStr) return false;
+            return dateStr.slice(5, 10) === new Date().toISOString().slice(5, 10);
+        }
+
+        function toggleSidebar() {
+            const bar = document.getElementById('event-sidebar');
+            bar.style.display = (bar.style.display === 'block') ? 'none' : 'block';
+        }
+
+        window.onload = render;
+    </script>
+</body>
+</html>
+ 
