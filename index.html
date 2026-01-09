@@ -1,537 +1,639 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legacy - Interactive Family Tree</title>
-    
-    <!-- External Dependencies -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --secondary: #f43f5e;
-            --bg-glass: rgba(255, 255, 255, 0.9);
-            --border-glass: rgba(255, 255, 255, 0.3);
-            --shadow-custom: 0 10px 30px rgba(0, 0, 0, 0.05);
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legacy - Universal Family Tree</title>
+    
+    <!-- External Dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --secondary: #f43f5e;
+            --bg-main: #f8fafc;
+            --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
 
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
-            min-height: 100vh;
-            color: #1e293b;
-            margin: 0;
-            overflow-x: hidden;
-        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-main);
+            color: #1e293b;
+            margin: 0;
+            overflow-x: hidden;
+        }
 
-        /* --- Navbar --- */
-        .navbar {
-            background: var(--bg-glass);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #e2e8f0;
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
+        /* --- Header & Centered Title --- */
+        .app-header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 0.8rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
 
-        .navbar-brand {
-            font-weight: 800;
-            color: var(--primary) !important;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            letter-spacing: -0.5px;
-        }
+        .brand-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: var(--primary);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            pointer-events: none;
+        }
 
-        /* --- Tree Core Styling --- */
-        #tree-container {
-            padding: 60px 20px;
-            overflow-x: auto;
-            text-align: center;
-            min-height: 85vh;
-        }
+        /* Smaller Nav Buttons */
+        .header-btn {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-        .tree {
-            display: inline-block;
-            white-space: nowrap;
-        }
+        /* --- Tree Layout Area --- */
+        #tree-container {
+            padding: 40px 20px;
+            overflow-x: auto;
+            text-align: center;
+            min-height: 80vh;
+        }
 
-        .tree ul {
-            padding-top: 30px; 
-            position: relative;
-            transition: all 0.5s;
-            display: flex;
-            justify-content: center;
-        }
+        .tree {
+            display: inline-block;
+            white-space: nowrap;
+        }
 
-        .tree li {
-            text-align: center;
-            list-style-type: none;
-            position: relative;
-            padding: 30px 10px 0 10px;
-            transition: all 0.5s;
-        }
+        .tree ul {
+            padding-top: 20px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
 
-        /* Connecting Lines Logic */
-        .tree li::before, .tree li::after {
-            content: '';
-            position: absolute; 
-            top: 0; 
-            right: 50%;
-            border-top: 2px solid #cbd5e1;
-            width: 50%; 
-            height: 30px;
-        }
-        .tree li::after {
-            right: auto; 
-            left: 50%;
-            border-left: 2px solid #cbd5e1;
-        }
+        .tree li {
+            text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 5px 0 5px;
+        }
 
-        .tree li:only-child::after, .tree li:only-child::before { display: none; }
-        .tree li:only-child { padding-top: 0; }
-        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
-        .tree li:last-child::before { border-right: 2px solid #cbd5e1; border-radius: 0 10px 0 0; }
-        .tree li:first-child::after { border-radius: 10px 0 0 0; }
+        /* Connecting Lines */
+        .tree li::before, .tree li::after {
+            content: ''; position: absolute; top: 0; right: 50%;
+            border-top: 2px solid #cbd5e1; width: 50%; height: 20px;
+        }
+        .tree li::after { right: auto; left: 50%; border-left: 2px solid #cbd5e1; }
+        .tree li:only-child::after, .tree li:only-child::before { display: none; }
+        .tree li:only-child { padding-top: 0; }
+        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+        .tree li:last-child::before { border-right: 2px solid #cbd5e1; border-radius: 0 10px 0 0; }
+        .tree li:first-child::after { border-radius: 10px 0 0 0; }
+        .tree ul ul::before {
+            content: ''; position: absolute; top: 0; left: 50%;
+            border-left: 2px solid #cbd5e1; width: 0; height: 20px;
+        }
 
-        .tree ul ul::before {
-            content: '';
-            position: absolute; 
-            top: 0; 
-            left: 50%;
-            border-left: 2px solid #cbd5e1;
-            width: 0; 
-            height: 30px;
-        }
+        /* Node Styling */
+        .node-mini {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 18px;
+            width: 140px;
+            display: inline-block;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            position: relative;
+            z-index: 5;
+        }
 
-        /* Person Node Cards */
-        .person-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            padding: 20px;
-            border-radius: 20px;
-            display: inline-block;
-            position: relative;
-            box-shadow: var(--shadow-custom);
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-            width: 200px;
-            cursor: pointer;
-            z-index: 10;
-        }
+        .node-mini:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: var(--card-shadow);
+        }
 
-        .person-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 30px 60px rgba(99, 102, 241, 0.12);
-            border-color: var(--primary-light);
-        }
+        .node-img-thumb {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
-        .gender-male { border-top: 5px solid var(--primary); }
-        .gender-female { border-top: 5px solid var(--secondary); }
+        .node-img-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .node-name { font-weight: 700; font-size: 0.85rem; color: #0f172a; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; }
+        .node-role { font-size: 0.65rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
 
-        .person-img {
-            width: 56px;
-            height: 56px;
-            background: #f8fafc;
-            border-radius: 50%;
-            margin: 0 auto 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #475569;
-            font-size: 1.2rem;
-            border: 1px solid #f1f5f9;
-        }
+        /* Deceased styling */
+        .is-deceased { filter: grayscale(1); opacity: 0.8; }
+        .deceased-ribbon { color: #64748b; font-size: 0.6rem; margin-top: 2px; }
 
-        .person-name {
-            font-weight: 700;
-            font-size: 1rem;
-            margin-bottom: 4px;
-            color: #0f172a;
-            white-space: normal;
-        }
+        /* --- Profile Modal Card --- */
+        .profile-view-card {
+            text-align: center;
+            padding: 10px;
+        }
 
-        .person-role {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #64748b;
-            font-weight: 700;
-        }
+        .profile-view-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            border: 4px solid #fff;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-        /* --- Dynamic Hover Details (Popover) --- */
-        .details-popover {
-            position: absolute;
-            background: white;
-            width: 280px;
-            padding: 24px;
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            top: 50%;
-            left: 110%;
-            transform: translateY(-50%);
-            display: none;
-            z-index: 1000;
-            text-align: left;
-            border: 1px solid #f1f5f9;
-            pointer-events: none; /* Prevents flickering */
-        }
+        .profile-view-img img { width: 100%; height: 100%; object-fit: cover; }
 
-        .person-card:hover .details-popover {
-            display: block;
-            animation: fadeInRight 0.3s ease-out;
-        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .status-married { background: #dcfce7; color: #166534; }
+        .status-single { background: #fee2e2; color: #991b1b; }
+        .status-deceased { background: #f1f5f9; color: #475569; }
 
-        @keyframes fadeInRight {
-            from { opacity: 0; transform: translateY(-50%) translateX(-15px); }
-            to { opacity: 1; transform: translateY(-50%) translateX(0); }
-        }
+        .info-grid {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: left;
+        }
 
-        /* --- Event Tracker Sidebar --- */
-        .event-sidebar {
-            position: fixed;
-            right: 25px;
-            bottom: 25px;
-            width: 340px;
-            max-height: 450px;
-            background: var(--bg-glass);
-            backdrop-filter: blur(16px);
-            border-radius: 28px;
-            padding: 24px;
-            border: 1px solid var(--border-glass);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow-y: auto;
-            z-index: 900;
-            display: none;
-        }
+        .info-item { margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+        .info-item:last-child { border: none; margin-bottom: 0; }
+        .info-label { font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-value { font-size: 0.9rem; font-weight: 600; color: #1e293b; }
 
-        .event-item {
-            padding: 14px;
-            border-radius: 16px;
-            margin-bottom: 12px;
-            background: white;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            transition: transform 0.2s;
-        }
+        /* --- Event Sidebar --- */
+        .event-drawer {
+            position: fixed;
+            right: -350px; top: 0; bottom: 0;
+            width: 320px;
+            background: white;
+            z-index: 1050;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+            transition: right 0.3s ease;
+            padding: 25px;
+            overflow-y: auto;
+        }
+        .event-drawer.open { right: 0; }
 
-        .event-item:hover { transform: scale(1.02); }
+        .drawer-overlay {
+            position: fixed;
+            inset: 0; background: rgba(0,0,0,0.2);
+            z-index: 1040;
+            display: none;
+        }
 
-        .event-item.today {
-            background: #eef2ff;
-            border: 1px solid var(--primary-light);
-            animation: pulse-border 2s infinite;
-        }
+        /* Form Styling */
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 10px 15px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
 
-        @keyframes pulse-border {
-            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.3); }
-            70% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
-        }
-
-        /* Modal Polish */
-        .modal-content { border-radius: 30px; border: none; padding: 10px; }
-        .form-control, .form-select { border-radius: 14px; padding: 12px; border: 1px solid #e2e8f0; }
-        .btn-primary { background: var(--primary); border: none; border-radius: 14px; padding: 12px 24px; font-weight: 700; transition: all 0.3s; }
-        .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); }
-
-        /* Mobile Adjustments */
-        @media (max-width: 768px) {
-            .event-sidebar { width: calc(100% - 40px); right: 20px; }
-            .details-popover { left: 50%; top: 110%; transform: translateX(-50%); width: 240px; }
-        }
-    </style>
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            .brand-center { font-size: 1.1rem; width: 100px; text-align: center; }
+            .header-btn span { display: none; }
+            .node-mini { width: 120px; padding: 10px; }
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Nav -->
-    <nav class="navbar">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-network-wired"></i> LEGACY
-            </a>
-            <div class="d-flex gap-3">
-                <button class="btn btn-outline-dark rounded-pill" onclick="toggleSidebar()">
-                    <i class="fas fa-calendar-day me-2"></i>Events
-                </button>
-                <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#memberModal" onclick="resetForm()">
-                    <i class="fas fa-plus me-2"></i>Add Member
-                </button>
-            </div>
-        </div>
-    </nav>
+    <header class="app-header">
+        <button class="btn btn-light header-btn" onclick="toggleEvents()">
+            <i class="fas fa-calendar-alt"></i> <span>Events</span>
+        </button>
+        
+        <div class="brand-center">Legacy</div>
 
-    <!-- Tree Layout Area -->
-    <div id="tree-container">
-        <div class="tree" id="tree-root">
-            <!-- JavaScript will inject the nodes here -->
-        </div>
-    </div>
+        <button class="btn btn-primary header-btn" onclick="openAddModal()">
+            <i class="fas fa-plus"></i> <span>Add Member</span>
+        </button>
+    </header>
 
-    <!-- Right-side Event Panel -->
-    <div class="event-sidebar" id="event-sidebar">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <h5 class="fw-bold m-0 text-indigo-900">Upcoming Events</h5>
-            <button class="btn-close" onclick="toggleSidebar()" style="font-size: 0.8rem;"></button>
-        </div>
-        <div id="event-list">
-            <!-- Events injected here -->
-        </div>
-    </div>
+    <div id="tree-container">
+        <div class="tree" id="tree-root"></div>
+    </div>
 
-    <!-- Member Management Modal -->
-    <div class="modal fade" id="memberModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content shadow-lg">
-                <div class="modal-header border-0">
-                    <h5 class="fw-bold" id="modalTitle">Family Member Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="memberForm">
-                        <input type="hidden" id="editId">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label class="form-label small fw-bold text-muted">FULL NAME</label>
-                                <input type="text" id="mName" class="form-control" required placeholder="e.g. Robert Wilson">
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small fw-bold text-muted">ROLE</label>
-                                <input type="text" id="mRole" class="form-control" required placeholder="e.g. Son">
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small fw-bold text-muted">GENDER</label>
-                                <select id="mGender" class="form-select">
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label small fw-bold text-muted">PARENT (Branch from)</label>
-                                <select id="mParent" class="form-select">
-                                    <option value="null">Set as Root (Top)</option>
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small fw-bold text-muted">BIRTH DATE</label>
-                                <input type="date" id="mBirth" class="form-control">
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small fw-bold text-muted">ANNIVERSARY</label>
-                                <input type="date" id="mAnniv" class="form-control">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label small fw-bold text-muted">BIOGRAPHY</label>
-                                <textarea id="mBio" class="form-control" rows="3" placeholder="A short story about them..."></textarea>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-primary w-100" onclick="handleSave()">Save to Legacy</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Profile View Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 400px;">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+                <div class="modal-body profile-view-card">
+                    <button type="button" class="btn-close float-end" data-bs-dismiss="modal"></button>
+                    
+                    <div class="profile-view-img">
+                        <div id="v-img-container"></div>
+                    </div>
 
-    <!-- Logic -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Internal State
-        let family = [
-            { id: 1, name: "Arthur Wilson", role: "Grandfather", gender: "male", parentId: null, birth: "1945-05-12", anniv: "1968-06-20", bio: "The founding patriarch. A retired architect with a passion for classical music." },
-            { id: 2, name: "Rose Wilson", role: "Grandmother", gender: "female", parentId: null, birth: "1948-03-10", anniv: "1968-06-20", bio: "Renowned gardener and the heart of the Wilson family celebrations." },
-            { id: 3, name: "David Wilson", role: "Father", gender: "male", parentId: 1, birth: "1972-11-22", anniv: "1998-10-05", bio: "Lead engineer and weekend mountain climber." },
-            { id: 4, name: "Alice Smith", role: "Mother", gender: "female", parentId: 1, birth: "1975-08-30", anniv: "1998-10-05", bio: "Creative writer and historical researcher." },
-            { id: 5, name: "Leo Wilson", role: "Son", gender: "male", parentId: 3, birth: "2002-01-01", anniv: null, bio: "Aspiring AI researcher and travel enthusiast." }
-        ];
+                    <div id="v-status-badge"></div>
+                    <h4 class="fw-800 mb-0" id="v-name"></h4>
+                    <p class="text-primary fw-bold small mb-1" id="v-role"></p>
 
-        // --- Render Engine ---
-        function render() {
-            const rootContainer = document.getElementById('tree-root');
-            rootContainer.innerHTML = "";
-            
-            const mainRoots = family.filter(m => m.parentId === null);
-            const wrapper = document.createElement('ul');
-            
-            mainRoots.forEach(root => {
-                wrapper.appendChild(createNode(root));
-            });
-            
-            rootContainer.appendChild(wrapper);
-            updateDropdown();
-            refreshEvents();
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Birth Date</div>
+                            <div class="info-value" id="v-birth"></div>
+                        </div>
+                        <div id="v-marriage-box" class="info-item d-none">
+                            <div class="info-label">Marriage Date</div>
+                            <div class="info-value" id="v-marriage"></div>
+                        </div>
+                        <div id="v-death-box" class="info-item d-none">
+                            <div class="info-label">Passing Date</div>
+                            <div class="info-value text-danger" id="v-death"></div>
+                        </div>
+                        <div class="info-item mb-0">
+                            <div class="info-label">Biography</div>
+                            <p class="small text-muted mb-0" id="v-bio"></p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button class="btn btn-outline-secondary rounded-pill flex-grow-1 fw-bold btn-sm" id="edit-trigger">Edit Profile</button>
+                        <!-- FIXED: Added explicit id and click handler for deletion -->
+                        <button class="btn btn-outline-danger rounded-pill fw-bold btn-sm" id="delete-btn">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Modal (Add/Edit) -->
+    <div class="modal fade" id="formModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-800" id="formTitle">Manage Member</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="memberForm">
+                        <input type="hidden" id="mId">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-4">
+                                <div class="profile-view-img mx-auto" onclick="document.getElementById('mFile').click()" style="cursor: pointer; border: 2px dashed #cbd5e1;">
+                                    <div id="form-img-preview">
+                                        <i class="fas fa-camera fa-2x text-muted"></i>
+                                        <div class="small text-muted">Add photo</div>
+                                    </div>
+                                </div>
+                                <input type="file" id="mFile" class="d-none" accept="image/*">
+                            </div>
+
+                            <div class="col-md-8">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="info-label ms-1">Full Name</label>
+                                        <input type="text" id="mName" class="form-control" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="info-label ms-1">Role</label>
+                                        <input type="text" id="mRole" class="form-control" placeholder="e.g. Son" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="info-label ms-1">Gender</label>
+                                        <select id="mGender" class="form-select">
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="info-label ms-1">Status</label>
+                                        <select id="mStatus" class="form-select" onchange="toggleFormDates()">
+                                            <option value="single">Single</option>
+                                            <option value="married">Married</option>
+                                            <option value="deceased">Deceased</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="info-label ms-1">Birth Date</label>
+                                        <input type="date" id="mBirth" class="form-control">
+                                    </div>
+                                    
+                                    <div class="col-6 d-none" id="mMarriageBox">
+                                        <label class="info-label ms-1">Marriage Date</label>
+                                        <input type="date" id="mMarriage" class="form-control">
+                                    </div>
+                                    <div class="col-6 d-none" id="mDeathBox">
+                                        <label class="info-label ms-1">Death Date</label>
+                                        <input type="date" id="mDeath" class="form-control">
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="info-label ms-1">Parent (Branch from)</label>
+                                        <select id="mParent" class="form-select"></select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="info-label ms-1">Short Biography</label>
+                                        <textarea id="mBio" class="form-control" rows="2"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-primary w-100 py-2 rounded-pill fw-bold" onclick="saveMember()">Save to Legacy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Drawer -->
+    <div class="drawer-overlay" id="overlay" onclick="toggleEvents()"></div>
+    <div class="event-drawer" id="drawer">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-800 m-0">Family Timeline</h5>
+            <button class="btn-close" onclick="toggleEvents()"></button>
+        </div>
+        <div id="event-list"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initial Data with new life-event fields
+        let family = [
+            { id: 1, name: "Arthur Wilson", role: "Patriarch", gender: "male", status: "deceased", parentId: null, birth: "1945-05-12", marriageDate: "1968-06-20", deathDate: "2020-11-05", bio: "The founding member of our family tree.", img: null },
+            { id: 2, name: "Rose Wilson", role: "Matriarch", gender: "female", status: "married", parentId: null, birth: "1948-03-10", marriageDate: "1968-06-20", deathDate: null, bio: "Always active in family traditions.", img: null },
+            { id: 3, name: "David Wilson", role: "Father", gender: "male", status: "married", parentId: 1, birth: "1972-11-22", marriageDate: "1998-10-05", deathDate: null, bio: "Lead Engineer.", img: null },
+            { id: 4, name: "Alice Wilson", role: "Mother", gender: "female", status: "married", parentId: 1, birth: "1975-08-30", marriageDate: "1998-10-05", deathDate: null, bio: "History teacher.", img: null },
+            { id: 5, name: "Leo Wilson", role: "Son", gender: "male", status: "single", parentId: 3, birth: "2002-01-01", marriageDate: null, deathDate: null, bio: "Tech enthusiast.", img: null }
+        ];
+
+        let currentImgBase64 = null;
+        const profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
+        const formModal = new bootstrap.Modal(document.getElementById('formModal'));
+
+        function renderTree() {
+            const rootEl = document.getElementById('tree-root');
+            rootEl.innerHTML = "";
+            const roots = family.filter(m => m.parentId === null);
+            const ul = document.createElement('ul');
+            roots.forEach(root => ul.appendChild(createNode(root)));
+            rootEl.appendChild(ul);
+            updateParentDropdown();
+            updateEvents();
+        }
+
+        function createNode(member) {
+            const li = document.createElement('li');
+            const node = document.createElement('div');
+            node.className = `node-mini ${member.status === 'deceased' ? 'is-deceased' : ''}`;
+            node.onclick = () => viewProfile(member.id);
+
+            const imgHtml = member.img ? `<img src="${member.img}">` : `<i class="fas fa-user text-muted fa-lg"></i>`;
+
+            node.innerHTML = `
+                <div class="node-img-thumb">${imgHtml}</div>
+                <div class="node-name">${member.name}</div>
+                <div class="node-role">${member.role}</div>
+                ${member.status === 'deceased' ? '<div class="deceased-ribbon">† Forever Missed</div>' : ''}
+            `;
+
+            li.appendChild(node);
+            const children = family.filter(m => m.parentId === member.id);
+            if (children.length > 0) {
+                const subUl = document.createElement('ul');
+                children.forEach(child => subUl.appendChild(createNode(child)));
+                li.appendChild(subUl);
+            }
+            return li;
+        }
+
+        // --- Profile Management ---
+        function viewProfile(id) {
+            const m = family.find(f => f.id === id);
+            if(!m) return;
+
+            document.getElementById('v-name').innerText = m.name;
+            document.getElementById('v-role').innerText = m.role;
+            document.getElementById('v-birth').innerText = m.birth || 'N/A';
+            document.getElementById('v-bio').innerText = m.bio || 'Part of our heritage.';
+
+            // Status Badge
+            const badge = document.getElementById('v-status-badge');
+            badge.className = `status-badge status-${m.status}`;
+            badge.innerText = m.status;
+
+            // Conditional Dates
+            const marriageBox = document.getElementById('v-marriage-box');
+            if (m.marriageDate) {
+                marriageBox.classList.remove('d-none');
+                document.getElementById('v-marriage').innerText = m.marriageDate;
+            } else { marriageBox.classList.add('d-none'); }
+
+            const deathBox = document.getElementById('v-death-box');
+            if (m.status === 'deceased' && m.deathDate) {
+                deathBox.classList.remove('d-none');
+                document.getElementById('v-death').innerText = m.deathDate;
+            } else { deathBox.classList.add('d-none'); }
+
+            // Image
+            const imgCont = document.getElementById('v-img-container');
+            imgCont.innerHTML = m.img ? `<img src="${m.img}">` : `<i class="fas fa-user text-muted fa-4x"></i>`;
+
+            // Edit Trigger
+            document.getElementById('edit-trigger').onclick = () => {
+                profileModal.hide();
+                openEditModal(id);
+            };
+
+            // FIXED: Deletion Logic
+            document.getElementById('delete-btn').onclick = (e) => {
+                e.stopPropagation();
+                if(confirm(`Are you sure you want to delete ${m.name}?\nNote: All direct descendants will also be removed.`)) {
+                    deleteMember(id);
+                    profileModal.hide();
+                    renderTree();
+                }
+            };
+
+            profileModal.show();
         }
 
-        function createNode(member) {
-            const li = document.createElement('li');
-            const card = document.createElement('div');
-            card.className = `person-card gender-${member.gender}`;
+        function deleteMember(id) {
+            // Remove the member
+            family = family.filter(f => f.id !== id);
+            // Recursive removal of children
+            const children = family.filter(f => f.parentId === id);
+            children.forEach(child => deleteMember(child.id));
+        }
+
+        function openAddModal() {
+            document.getElementById('formTitle').innerText = "Add Family Member";
+            document.getElementById('mId').value = "";
+            document.getElementById('memberForm').reset();
+            currentImgBase64 = null;
+            document.getElementById('form-img-preview').innerHTML = `<i class="fas fa-camera fa-2x text-muted"></i>`;
+            toggleFormDates();
+            formModal.show();
+        }
+
+        function openEditModal(id) {
+            const m = family.find(f => f.id === id);
+            document.getElementById('formTitle').innerText = "Edit Member Details";
+            document.getElementById('mId').value = m.id;
+            document.getElementById('mName').value = m.name;
+            document.getElementById('mRole').value = m.role;
+            document.getElementById('mGender').value = m.gender;
+            document.getElementById('mStatus').value = m.status;
+            document.getElementById('mParent').value = m.parentId || "null";
+            document.getElementById('mBirth').value = m.birth || "";
+            document.getElementById('mMarriage').value = m.marriageDate || "";
+            document.getElementById('mDeath').value = m.deathDate || "";
+            document.getElementById('mBio').value = m.bio || "";
             
-            // Check for events today
-            const isBday = checkToday(member.birth);
-            const isAnniv = checkToday(member.anniv);
+            currentImgBase64 = m.img;
+            document.getElementById('form-img-preview').innerHTML = m.img ? `<img src="${m.img}">` : `<i class="fas fa-camera fa-2x text-muted"></i>`;
+            toggleFormDates();
+            formModal.show();
+        }
 
-            card.innerHTML = `
-                <div class="person-img">
-                    <i class="fas fa-${member.gender === 'male' ? 'male' : 'female'}"></i>
-                </div>
-                <div class="person-name">${member.name}</div>
-                <div class="person-role">${member.role}</div>
-                <div class="mt-2 h-10">
-                    ${isBday ? '<span class="badge bg-warning text-dark me-1"><i class="fas fa-birthday-cake"></i></span>' : ''}
-                    ${isAnniv ? '<span class="badge bg-danger me-1"><i class="fas fa-heart"></i></span>' : ''}
-                </div>
+        function toggleFormDates() {
+            const status = document.getElementById('mStatus').value;
+            const marriageBox = document.getElementById('mMarriageBox');
+            const deathBox = document.getElementById('mDeathBox');
 
-                <!-- Hover Details -->
-                <div class="details-popover">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="badge bg-indigo-100 text-indigo-700 px-3 py-2 rounded-pill font-bold">Profile</span>
-                        <i class="fas fa-edit text-muted cursor-pointer" onclick="editMode(${member.id})"></i>
-                    </div>
-                    <h6 class="fw-bold mb-1">${member.name}</h6>
-                    <p class="text-muted small mb-3">${member.role}</p>
-                    
-                    <div class="small d-flex align-items-center gap-2 mb-2">
-                        <div class="bg-blue-50 p-2 rounded-circle text-blue-600"><i class="fas fa-baby"></i></div>
-                        <div><strong>Birth:</strong> ${member.birth || 'Unknown'}</div>
-                    </div>
-                    ${member.anniv ? `
-                    <div class="small d-flex align-items-center gap-2 mb-3">
-                        <div class="bg-rose-50 p-2 rounded-circle text-rose-600"><i class="fas fa-rings-wedding"></i></div>
-                        <div><strong>Anniversary:</strong> ${member.anniv}</div>
-                    </div>` : ''}
-                    
-                    <div class="mt-3 p-3 bg-slate-50 rounded-4 italic small text-slate-600">
-                        "${member.bio || 'Sharing the legacy of our family.'}"
-                    </div>
-                </div>
-            `;
-
-            li.appendChild(card);
-
-            const children = family.filter(m => m.parentId === member.id);
-            if (children.length > 0) {
-                const subUl = document.createElement('ul');
-                children.forEach(child => subUl.appendChild(createNode(child)));
-                li.appendChild(subUl);
+            if (status === 'married') {
+                marriageBox.classList.remove('d-none');
+                deathBox.classList.add('d-none');
+            } else if (status === 'deceased') {
+                marriageBox.classList.remove('d-none');
+                deathBox.classList.remove('d-none');
+            } else {
+                marriageBox.classList.add('d-none');
+                deathBox.classList.add('d-none');
             }
-
-            return li;
         }
 
-        // --- Data Handling ---
-        function handleSave() {
-            const idInput = document.getElementById('editId').value;
-            const newObj = {
-                id: idInput ? parseInt(idInput) : Date.now(),
+        function saveMember() {
+            const id = document.getElementById('mId').value;
+            const memberData = {
+                id: id ? parseInt(id) : Date.now(),
                 name: document.getElementById('mName').value,
                 role: document.getElementById('mRole').value,
                 gender: document.getElementById('mGender').value,
+                status: document.getElementById('mStatus').value,
                 parentId: document.getElementById('mParent').value === "null" ? null : parseInt(document.getElementById('mParent').value),
                 birth: document.getElementById('mBirth').value,
-                anniv: document.getElementById('mAnniv').value,
-                bio: document.getElementById('mBio').value
+                marriageDate: document.getElementById('mMarriage').value,
+                deathDate: document.getElementById('mDeath').value,
+                bio: document.getElementById('mBio').value,
+                img: currentImgBase64
             };
 
-            if (idInput) {
-                const idx = family.findIndex(f => f.id === parseInt(idInput));
-                family[idx] = newObj;
+            if (id) {
+                const idx = family.findIndex(f => f.id === memberData.id);
+                family[idx] = memberData;
             } else {
-                family.push(newObj);
+                family.push(memberData);
             }
 
-            bootstrap.Modal.getInstance(document.getElementById('memberModal')).hide();
-            render();
+            formModal.hide();
+            renderTree();
         }
 
-        function editMode(id) {
-            const member = family.find(f => f.id === id);
-            if (!member) return;
+        // Image Handling
+        document.getElementById('mFile').onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    currentImgBase64 = ev.target.result;
+                    document.getElementById('form-img-preview').innerHTML = `<img src="${currentImgBase64}">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        };
 
-            document.getElementById('modalTitle').innerText = "Edit Member Info";
-            document.getElementById('editId').value = member.id;
-            document.getElementById('mName').value = member.name;
-            document.getElementById('mRole').value = member.role;
-            document.getElementById('mGender').value = member.gender;
-            document.getElementById('mParent').value = member.parentId === null ? "null" : member.parentId;
-            document.getElementById('mBirth').value = member.birth;
-            document.getElementById('mAnniv').value = member.anniv;
-            document.getElementById('mBio').value = member.bio;
-
-            new bootstrap.Modal(document.getElementById('memberModal')).show();
-        }
-
-        function resetForm() {
-            document.getElementById('modalTitle').innerText = "Add New Member";
-            document.getElementById('editId').value = "";
-            document.getElementById('memberForm').reset();
-        }
-
-        // --- Helpers ---
-        function updateDropdown() {
+        // --- UI Updates ---
+        function updateParentDropdown() {
             const sel = document.getElementById('mParent');
-            const current = sel.value;
-            sel.innerHTML = '<option value="null">Set as Root (Top)</option>';
+            sel.innerHTML = '<option value="null">Set as Root (Top Level)</option>';
             family.forEach(m => {
-                const op = document.createElement('option');
-                op.value = m.id;
-                op.textContent = m.name;
-                sel.appendChild(op);
+                sel.innerHTML += `<option value="${m.id}">${m.name} (${m.role})</option>`;
             });
-            sel.value = current || "null";
         }
 
-        function refreshEvents() {
-            const target = document.getElementById('event-list');
-            target.innerHTML = "";
-            document.getElementById('event-list');
-            target.innerHTML = "";
-            const todayKey = new Date().toISOString().slice(5, 10);
-            
-            const list = [];
+        function updateEvents() {
+            const list = document.getElementById('event-list');
+            list.innerHTML = "";
+            const events = [];
+
             family.forEach(m => {
-                if (m.birth) list.push({ date: m.birth, type: 'Birthday', name: m.name, icon: 'cake-candles', color: 'warning' });
-                if (m.anniv) list.push({ date: m.anniv, type: 'Anniversary', name: m.name, icon: 'heart', color: 'danger' });
+                if (m.birth) events.push({ date: m.birth, title: "Birthday", name: m.name, icon: "cake-candles", color: "primary" });
+                if (m.marriageDate) events.push({ date: m.marriageDate, title: "Marriage Anniversary", name: m.name, icon: "heart", color: "success" });
+                if (m.deathDate) events.push({ date: m.deathDate, title: "Remembrance", name: m.name, icon: "dove", color: "secondary" });
             });
 
-            list.sort((a, b) => a.date.slice(5) > b.date.slice(5) ? 1 : -1);
+            // Simple date sorting (ignoring years for annual anniversaries, showing all for timeline)
+            events.sort((a,b) => a.date > b.date ? -1 : 1);
 
-            list.forEach(e => {
-                const isNow = e.date.slice(5, 10) === todayKey;
+            events.forEach(e => {
                 const div = document.createElement('div');
-                div.className = `event-item ${isNow ? 'today' : ''}`;
+                div.className = "p-3 bg-light rounded-4 mb-3 border-start border-4 border-" + e.color;
                 div.innerHTML = `
-                    <div class="bg-${e.color}-100 p-2 rounded-circle text-${e.color}">
-                        <i class="fas fa-${e.icon}"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="fw-bold small">${e.name}</div>
-                        <div class="text-muted" style="font-size: 0.65rem;">${e.type} • ${e.date}</div>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="text-${e.color} mt-1"><i class="fas fa-${e.icon}"></i></div>
+                        <div>
+                            <div class="fw-bold" style="font-size: 0.85rem;">${e.title}</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">${e.name}</div>
+                            <div class="fw-bold text-dark mt-1" style="font-size: 0.7rem;">${e.date}</div>
+                        </div>
                     </div>
                 `;
-                target.appendChild(div);
+                list.appendChild(div);
             });
         }
 
-        function checkToday(dateStr) {
-            if (!dateStr) return false;
-            return dateStr.slice(5, 10) === new Date().toISOString().slice(5, 10);
+        function toggleEvents() {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('overlay');
+            drawer.classList.toggle('open');
+            overlay.style.display = drawer.classList.contains('open') ? 'block' : 'none';
         }
 
-        function toggleSidebar() {
-            const bar = document.getElementById('event-sidebar');
-            bar.style.display = (bar.style.display === 'block') ? 'none' : 'block';
-        }
-
-        window.onload = render;
+        window.onload = renderTree;
     </script>
 </body>
 </html>
- 
